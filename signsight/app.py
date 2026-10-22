@@ -1,4 +1,5 @@
 """Basa Streamlit UI. Run: streamlit run app.py  (add ?sample=1 to the URL to auto-load the sample lease)"""
+import base64
 import html
 import re
 from pathlib import Path
@@ -11,10 +12,11 @@ from ingest import extract_chunks_from_pdf
 from redflags import scan_contract
 from retrieve import ContractIndex, ask_contract, summarize_contract
 
-st.set_page_config(page_title="Basa — Know What You're About to Sign", page_icon="👁️", layout="wide",
-                   initial_sidebar_state="collapsed")
-
+LOGO = Path(__file__).with_name("assets") / "basa-logo.png"
 SAMPLE_PDF = Path(__file__).with_name("samples") / "sample_lease.pdf"
+
+st.set_page_config(page_title="Basa — Know What You're About to Sign", page_icon=str(LOGO), layout="wide",
+                   initial_sidebar_state="collapsed")
 
 for key, value in {
     "indexed_pdf_name": None, "contract_index": None, "doc_name": "", "index_summary": "", "messages": [],
@@ -43,7 +45,8 @@ STARTERS = [  # (language tag, question)
     ("TEST", "Allowed ba ang pets sa property?"),
 ]
 
-ASSISTANT_AVATAR = ":material/visibility:"
+ASSISTANT_AVATAR = str(LOGO)
+LOGO_URI = "data:image/png;base64," + base64.b64encode(LOGO.read_bytes()).decode()  # st.html can't serve local files
 CITATION = re.compile(r"\[p\.\s*(\d+)\]")  # \s also matches the narrow no-break space some models emit
 NO_DOC = "Upload a contract first, or try the sample boarding house lease below."
 
@@ -114,7 +117,10 @@ CSS = """
 .st-key-lang [role="group"] { border-color: transparent; background: transparent; box-shadow: none; }
 .st-key-lang [role="group"]:hover { background: #F4F6FB; }
 .st-key-lang input { color: var(--ink-2); font-weight: 500; cursor: pointer; }
-.brand-label { text-align: center; font-weight: 600; font-size: 15px; color: var(--ink); }
+.brand-label {
+    display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 16px; color: var(--ink);
+}
+.brand-mark { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.18); }
 .st-key-upload_pop button {
     background: var(--pill); color: #fff; border: none; border-radius: 999px; padding: 8px 20px; font-weight: 600;
 }
@@ -450,7 +456,7 @@ left, center, right = st.columns([3, 2, 3], vertical_alignment="center")
 with left:
     language = LANGUAGES[st.selectbox("Answer language", list(LANGUAGES), key="lang", label_visibility="collapsed")]
 with center:
-    st.html('<div class="brand-label">Basa</div>')
+    st.html(f'<div class="brand-label"><img class="brand-mark" src="{LOGO_URI}" alt="">Basa</div>')
 with right:
     with st.container(horizontal=True, horizontal_alignment="right"):
         with st.popover("Upload contract", icon=":material/upload:", key="upload_pop"):

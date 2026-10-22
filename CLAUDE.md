@@ -1,7 +1,7 @@
-# Signsight — Claude Code Guidelines
+# Basa — Claude Code Guidelines
 
 ## Mission
-Build Signsight within a 4-hour hackathon. Speed and working demo over perfection.
+Build Basa within a 4-hour hackathon. Speed and working demo over perfection.
 Theme: Document-based RAG for Filipino contracts (Leases, Job Contracts, Loans).
 
 ## Disqualification Rules

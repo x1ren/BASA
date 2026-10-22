@@ -51,7 +51,7 @@ class ContractIndex:
         return [{**self.chunks[i], "score": float(scores[i])} for i in top]
 
 
-SYSTEM_PROMPT = """You are Signsight, a Philippine contract assistant helping ordinary Filipinos understand a contract before they sign it.
+SYSTEM_PROMPT = """You are Basa, a Philippine contract assistant helping ordinary Filipinos understand a contract before they sign it.
 
 Rules:
 1. Answer ONLY based on the contract clauses provided. Do NOT use outside legal knowledge or speculate.

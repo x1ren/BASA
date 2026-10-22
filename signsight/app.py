@@ -1,4 +1,4 @@
-"""Signsight Streamlit UI. Run: streamlit run app.py  (add ?sample=1 to the URL to auto-load the sample lease)"""
+"""Basa Streamlit UI. Run: streamlit run app.py  (add ?sample=1 to the URL to auto-load the sample lease)"""
 import html
 import re
 from pathlib import Path
@@ -11,7 +11,7 @@ from ingest import extract_chunks_from_pdf
 from redflags import scan_contract
 from retrieve import ContractIndex, ask_contract, summarize_contract
 
-st.set_page_config(page_title="Signsight — See what you're signing", page_icon="👁️", layout="wide",
+st.set_page_config(page_title="Basa — Know What You're About to Sign", page_icon="👁️", layout="wide",
                    initial_sidebar_state="collapsed")
 
 SAMPLE_PDF = Path(__file__).with_name("samples") / "sample_lease.pdf"
@@ -128,6 +128,8 @@ CSS = """
     max-width: 560px;
 }
 .hero-title span { color: #64748B; }
+.hero-sub { margin-top: 14px; font-size: 16px; color: var(--ink-2); max-width: 520px; }
+.hero-sub b { color: var(--ink); }
 .mascot { position: relative; width: 240px; height: 140px; flex-shrink: 0; }
 .bot {
     position: absolute; left: 10px; top: 26px; width: 100px; height: 100px; border-radius: 50%;
@@ -285,7 +287,9 @@ def new_session():
 def render_hero():
     st.html(
         '<div class="hero">'
-        '<div class="hero-title" role="heading" aria-level="1"><span>Hi there,</span> Know What You\'re About to Sign?</div>'
+        '<div><div class="hero-title" role="heading" aria-level="1"><span>Hi there,</span> Know What You\'re About to '
+        'Sign?</div><div class="hero-sub"><b>Basa</b> — AI-powered contract risk scanner &amp; multilingual legal '
+        'assistant for Filipinos.</div></div>'
         '<div class="mascot" aria-hidden="true"><div class="bubble">Got a contract?<br>Let me read it first.</div>'
         '<div class="bot"><div class="visor"><i></i><i></i></div></div></div>'
         '</div>'
@@ -389,7 +393,7 @@ def run_pending(action, language):
                     result = ask_contract(index, action["text"], language=language)
                 reply = {"role": "assistant", "content": result["answer"], "sources": result["sources"]}
             except llm.LLMError as e:
-                reply = {"role": "assistant", "content": f"Signsight couldn't reach the AI service: {e}", "error": True}
+                reply = {"role": "assistant", "content": f"Basa couldn't reach the AI service: {e}", "error": True}
             except Exception:
                 reply = {"role": "assistant", "content": "Something went wrong while answering. Please try again.",
                          "error": True}
@@ -440,13 +444,13 @@ with st.container(key="rail"):
     st.button(":material/flag:", key="nav_flags", help="Red flags", on_click=set_view, args=("flags",))
     st.button(":material/description:", key="nav_doc", help="Contract clauses", on_click=set_view, args=("doc",))
     st.button(":material/history:", key="nav_history", help="History", on_click=set_view, args=("history",))
-    st.button(":material/visibility:", key="nav_home", help="Signsight home", on_click=set_view, args=("home",))
+    st.button(":material/visibility:", key="nav_home", help="Basa home", on_click=set_view, args=("home",))
 
 left, center, right = st.columns([3, 2, 3], vertical_alignment="center")
 with left:
     language = LANGUAGES[st.selectbox("Answer language", list(LANGUAGES), key="lang", label_visibility="collapsed")]
 with center:
-    st.html('<div class="brand-label">Signsight</div>')
+    st.html('<div class="brand-label">Basa</div>')
 with right:
     with st.container(horizontal=True, horizontal_alignment="right"):
         with st.popover("Upload contract", icon=":material/upload:", key="upload_pop"):

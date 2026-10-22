@@ -22,7 +22,7 @@ RISK_ORDER = {"High": 0, "Medium": 1, "Low": 2}
 PER_CATEGORY = 3
 FALLBACK_CHUNKS = 12  # if retrieval finds nothing (e.g. a Tagalog contract under BM25), scan the first N chunks
 
-SYSTEM_PROMPT = f"""You are Signsight, a contract reviewer protecting ordinary Filipinos (tenants, workers, borrowers) before they sign.
+SYSTEM_PROMPT = f"""You are Basa, a contract reviewer protecting ordinary Filipinos (tenants, workers, borrowers) before they sign.
 
 Inspect the contract clauses for terms that are unfair, one-sided, or predatory under common Philippine contract and tenancy conventions. Check these categories: {", ".join(CATEGORIES)}.
 

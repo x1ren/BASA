@@ -2,10 +2,11 @@
 [browser]
 gatherUsageStats = false
 
-# Dark "Linear/Raycast" palette; app.py adds the finer CSS on top
+# Light "card" palette; app.py adds the layout CSS on top. Font falls back to sans-serif offline.
 [theme]
-base = "dark"
-primaryColor = "#6366F1"
-backgroundColor = "#0B0F17"
-secondaryBackgroundColor = "#131924"
-textColor = "#E6E8EE"
+base = "light"
+primaryColor = "#111827"
+backgroundColor = "#EEF2F7"
+secondaryBackgroundColor = "#F4F6FB"
+textColor = "#0F172A"
+font = "Figtree:https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap, sans-serif"

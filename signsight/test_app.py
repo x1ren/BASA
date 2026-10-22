@@ -1,7 +1,7 @@
 """Phase 5 headless UI test (uses the live API in .env): python test_app.py
 
 Uploads samples/sample_lease.pdf, clicks every starter question, types one question,
-and checks the red-flag scan ran exactly once.
+asks for a Bisaya summary, and checks the red-flag scan ran exactly once.
 """
 import sys
 import time
@@ -48,10 +48,14 @@ print("Metrics:", [(m.label, m.value) for m in at.metric])
 PAUSE = 20  # seconds between questions, like a human demo (Groq free tier: ~1000 output tokens/min)
 for i in range(4):
     time.sleep(PAUSE)
+    at.button(key="chip_more").click().run()  # "•••" reveals the starter questions
     at.button(key=f"starter_{i}").click().run()
     assert not at.exception, at.exception
 time.sleep(PAUSE)
 at.chat_input[0].set_value("Pwede ba mag-alaga ng aso?").run()
+assert not at.exception, at.exception
+time.sleep(PAUSE)
+at.button(key="chip_bisaya").click().run()  # whole-contract summary in Bisaya
 assert not at.exception, at.exception
 
 msgs = at.session_state["messages"]
@@ -59,8 +63,9 @@ for m in msgs:
     tag = "Q" if m["role"] == "user" else ("ERR" if m.get("error") else "A")
     print(f"\n{tag}: {m['content']}")
 
-print(f"\nscan_calls after 5 questions = {scan_calls} (expected 1)")
-print(f"messages = {len(msgs)} (expected 10)")
-assert scan_calls == 1 and len(msgs) == 10
+print(f"\nscan_calls after 6 requests = {scan_calls} (expected 1)")
+print(f"messages = {len(msgs)} (expected 12)")
+assert scan_calls == 1 and len(msgs) == 12
+assert not any(m.get("error") for m in msgs), "an answer failed (rate limit?)"
 assert all("[p." in m["content"] for m in msgs[1:6:2]), "expected page citations on deposit/penalty/Bisaya answers"
 print("PASS")

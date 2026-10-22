@@ -88,7 +88,13 @@ def _expand_query(question):
         return question
 
 
-def ask_contract(index, question, k=4):
+def _language_rule(language):
+    if language:  # user picked a reply language in the UI; overrides rule 5
+        return f"Reply in {language} only, whatever language the question is in."
+    return "Reply in the same language as the question: an English question gets a fully English answer."
+
+
+def ask_contract(index, question, k=4, language=None):
     sources = index.search(_expand_query(question), k=k)
     context = "\n\n".join(f"Clause [p. {c['page']}]: {c['text']}" for c in sources)
     messages = [
@@ -96,11 +102,29 @@ def ask_contract(index, question, k=4):
         {"role": "user", "content": (
             f"Contract clauses:\n{context}\n\n"
             f"Question: {question}\n\n"
-            "Answer using only the clauses above and cite pages. Reply in the same language as the question: "
-            "an English question gets a fully English answer."
+            f"Answer using only the clauses above and cite pages. {_language_rule(language)}"
         )},
     ]
     return {"answer": llm.chat(messages, temperature=0.1), "sources": sources}
+
+
+SUMMARY_CHUNKS = 12  # keep the prompt small; sample contracts fit entirely
+
+
+def summarize_contract(index, language="English"):
+    """Plain-language overview of the whole contract (first SUMMARY_CHUNKS clauses), with page citations."""
+    sources = index.chunks[:SUMMARY_CHUNKS]
+    context = "\n\n".join(f"Clause [p. {c['page']}]: {c['text']}" for c in sources)
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": (
+            f"Contract clauses:\n{context}\n\n"
+            "Summarize this contract for the person about to sign it in 4-6 short bullets: what it is, the money "
+            "involved (rent, deposit, fees), how long it lasts, and the terms that could hurt them. Cite pages. "
+            f"{_language_rule(language)}"
+        )},
+    ]
+    return {"answer": llm.chat(messages, temperature=0.1, max_tokens=700), "sources": sources}
 
 
 if __name__ == "__main__":

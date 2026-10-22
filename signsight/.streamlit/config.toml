@@ -1,3 +1,11 @@
 # Keep the app fully offline except for the hackathon API (no Streamlit telemetry)
 [browser]
 gatherUsageStats = false
+
+# Dark "Linear/Raycast" palette; app.py adds the finer CSS on top
+[theme]
+base = "dark"
+primaryColor = "#6366F1"
+backgroundColor = "#0B0F17"
+secondaryBackgroundColor = "#131924"
+textColor = "#E6E8EE"

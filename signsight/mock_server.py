@@ -28,6 +28,32 @@ def fake_keywords(question):
     return " ".join(v for pat, v in KEYWORDS.items() if re.search(pat, q)) or question
 
 
+# canned red-flag scan for samples/sample_lease.pdf (deliberately unsorted, so the app's sorting is exercised)
+MOCK_FLAGS = [
+    {"category": "Rent & Price Escalation", "risk": "Medium", "page": 2,
+     "clause_summary": "The PHP 300 monthly maintenance and Wi-Fi fee may be adjusted by the lessor without prior notice.",
+     "plain_explanation": "The landlord can raise this fee whenever they want and you have no say or warning."},
+    {"category": "Deposit & Refund", "risk": "High", "page": 1,
+     "clause_summary": "The two-month security deposit is non-refundable if the lessee leaves before the end of the term for any reason.",
+     "plain_explanation": "If you move out early for any reason, even an emergency, you lose PHP 7,000."},
+    {"category": "Rent & Price Escalation", "risk": "Low", "page": 1,
+     "clause_summary": "Electricity and water are billed separately at rates set solely by the lessor.",
+     "plain_explanation": "You can't check if utility charges are fair. Ask to see the actual meter readings and bills."},
+    {"category": "Termination & Eviction", "risk": "High", "page": 2,
+     "clause_summary": "If the lessee ends the lease early, they forfeit the deposit and must pay rent for all remaining months.",
+     "plain_explanation": "Leaving early could cost you the deposit plus up to a year of rent, even though you no longer live there."},
+    {"category": "Auto-Renewal", "risk": "Medium", "page": 1,
+     "clause_summary": "The lease renews for another 12 months unless the lessee gives written notice 60 days before expiry.",
+     "plain_explanation": "If you forget to send written notice 2 months early, you are locked in for another full year."},
+    {"category": "Penalties & Surcharges", "risk": "High", "page": 1,
+     "clause_summary": "Rent paid after the 5th incurs a PHP 200 penalty per day until fully paid.",
+     "plain_explanation": "Being 2 weeks late adds PHP 2,800, almost a full month's rent. This penalty is very high."},
+    {"category": "Termination & Eviction", "risk": "High", "page": 2,
+     "clause_summary": "The lessor may terminate the lease at any time with only seven days notice.",
+     "plain_explanation": "The landlord can make you leave with just one week's warning, while you are locked in for a year."},
+]
+
+
 def fake_answer(user_msg):
     pages = sorted(set(re.findall(r"Clause \[p\. (\d+)\]", user_msg)))
     q = user_msg.rsplit("Question:", 1)[-1].split("\n")[0].strip()
@@ -45,7 +71,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         last = body["messages"][-1]["content"]
-        if "Keywords:" in last:
+        if "red-flag scan" in last.lower():
+            reply = f"```json\n{json.dumps(MOCK_FLAGS, indent=2)}\n```"  # fenced, like real models often do
+        elif "Keywords:" in last:
             reply = fake_keywords(last.split("Question:", 1)[1].split("Keywords:")[0])
         else:
             reply = fake_answer(last)

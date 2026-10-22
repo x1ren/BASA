@@ -17,6 +17,7 @@ MODEL = os.getenv("HACKATHON_MODEL", "")
 EMBED_MODEL = os.getenv("HACKATHON_EMBED_MODEL", "")
 
 TIMEOUT = 90
+MAX_RETRY_WAIT = 30  # seconds to wait out a rate limit before giving up
 
 
 class LLMError(RuntimeError):
@@ -33,6 +34,14 @@ def _check_config():
         raise LLMError(f"Missing in signsight/.env: {', '.join(missing)}")
 
 
+def _retry_after(resp, cap=None):
+    try:
+        wait = float(resp.headers.get("retry-after", 2))
+    except ValueError:
+        wait = 2.0
+    return min(wait, cap) if cap else wait
+
+
 def _post(path, payload):
     _check_config()
     headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
@@ -42,8 +51,10 @@ def _post(path, payload):
         except requests.RequestException as e:
             raise LLMError(f"Could not reach API: {type(e).__name__}") from None
         if resp.status_code in (429, 500, 502, 503, 504) and attempt == 0:
-            time.sleep(2)
+            time.sleep(_retry_after(resp, cap=MAX_RETRY_WAIT) if resp.status_code == 429 else 2)
             continue
+        if resp.status_code == 429:  # don't surface the raw body: it can include account/org details
+            raise LLMError(f"The AI service is busy (rate limit). Please try again in about {_retry_after(resp):.0f} seconds.")
         if not resp.ok:
             raise LLMError(f"API returned {resp.status_code}: {resp.text[:300]}")
         return resp.json()

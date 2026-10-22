@@ -1,0 +1,3 @@
+# Keep the app fully offline except for the hackathon API (no Streamlit telemetry)
+[browser]
+gatherUsageStats = false
